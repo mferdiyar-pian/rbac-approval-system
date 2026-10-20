@@ -1,64 +1,117 @@
-<<<<<<< HEAD
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# RBAC Approval System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web untuk pengelolaan dan persetujuan transaksi dengan menerapkan **Role-Based Access Control (RBAC)** dan **Audit Trail**. Sistem ini dikembangkan menggunakan Laravel dan PostgreSQL untuk mendukung proses transaksi yang terstruktur, pembatasan hak akses, serta pencatatan aktivitas pengguna.
 
-## About Laravel
+## Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Autentikasi Pengguna** — Login, logout, dan pengelolaan profil.
+- **Role-Based Access Control (RBAC)** — Pengaturan hak akses berdasarkan role pengguna.
+- **Manajemen Transaksi** — Pembuatan, pengajuan, pengeditan, dan penghapusan transaksi sesuai kewenangan.
+- **Workflow Persetujuan** — Alur transaksi melalui Inputer, Checker, dan Approver.
+- **Manajemen Pengguna** — Pengelolaan akun dan penetapan role oleh Superadmin atau Admin sesuai hak akses.
+- **Audit Trail** — Pencatatan aktivitas penting, termasuk pembuatan, pemeriksaan, persetujuan, penolakan, dan perubahan data transaksi.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Role Pengguna
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Superadmin** — Pengelolaan sistem sesuai permission yang diberikan.
+- **Admin** — Pengelolaan pengguna dan transaksi sesuai kewenangan.
+- **User** — Role pengguna umum dengan akses sesuai permission.
+- **Inputer** — Membuat dan mengajukan transaksi.
+- **Checker** — Memeriksa atau menolak transaksi beserta alasannya.
+- **Approver** — Memberikan persetujuan akhir atau menolak transaksi.
 
-## Learning Laravel
+Hak akses setiap role ditentukan melalui konfigurasi permission pada aplikasi.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Alur Persetujuan Transaksi
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. Inputer membuat draft transaksi.
+2. Inputer mengajukan transaksi kepada Checker.
+3. Checker memeriksa transaksi dan meloloskan atau menolaknya.
+4. Jika lolos pemeriksaan, transaksi diteruskan kepada Approver.
+5. Approver menyetujui atau menolak transaksi.
+6. Aktivitas penting dicatat dalam Audit Trail.
 
-## Laravel Sponsors
+## Teknologi yang Digunakan
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Backend:** Laravel, PHP
+- **Database:** PostgreSQL
+- **Autentikasi:** Laravel Breeze
+- **Manajemen Hak Akses:** Spatie Laravel Permission
+- **Frontend:** Blade, Tailwind CSS, Alpine.js
+- **Build Frontend:** Vite
 
-### Premium Partners
+## Persyaratan Sistem
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Pastikan perangkat sudah memiliki:
 
-## Contributing
+- PHP sesuai persyaratan versi Laravel dan dependensi project.
+- Composer.
+- PostgreSQL.
+- Node.js dan npm.
+- Git.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Instalasi
 
-## Code of Conduct
+### 1. Clone Repository
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+git clone https://github.com/mferdiyar-pian/rbac-approval-system.git
+cd rbac-approval-system
+```
 
-## Security Vulnerabilities
+### 2. Instal Dependensi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+composer install
+npm install
+```
 
-## License
+### 3. Konfigurasi Environment
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-=======
-# rbac-approval-system
-Web-based transaction approval system using Laravel, PostgreSQL, RBAC, and Log Audit
->>>>>>> 1bab234d93c19abb0ef756a8e66b480ff15e8171
+Salin file `.env.example` menjadi `.env`.
+
+Pada Windows Command Prompt:
+
+```cmd
+copy .env.example .env
+```
+
+Konfigurasikan nama database, username, dan password PostgreSQL pada file `.env`. Buat database terlebih dahulu melalui PostgreSQL.
+
+### 4. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+### 5. Migrasi dan Seeder
+
+```bash
+php artisan migrate --seed
+```
+
+Periksa konfigurasi seeder terlebih dahulu dan gunakan hanya untuk lingkungan pengembangan. Sesuaikan data akun serta permission dengan kebutuhan lokal.
+
+### 6. Build Frontend
+
+```bash
+npm run build
+```
+
+### 7. Jalankan Aplikasi
+
+```bash
+php artisan serve
+```
+
+Buka alamat lokal yang ditampilkan oleh Laravel di terminal.
+
+## Keamanan
+
+- Jangan mengunggah file `.env` atau kredensial rahasia ke repository.
+- Gunakan konfigurasi database dan password sendiri pada lingkungan lokal.
+- Pastikan permission dan otorisasi diuji sebelum aplikasi digunakan di lingkungan produksi.
+
+## Status Pengembangan
+
+Project ini dikembangkan sebagai aplikasi pengelolaan transaksi dan persetujuan berbasis RBAC dengan pencatatan aktivitas melalui Audit Trail.
