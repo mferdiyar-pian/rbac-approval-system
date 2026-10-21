@@ -34,6 +34,11 @@ class RolePermissionSeeder extends Seeder
             ]);
         }
 
+        $roleNames = ['Superadmin', 'Admin', 'User', 'Inputer', 'Checker', 'Approver'];
+        foreach ($roleNames as $roleName) {
+            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        }
+
         $superadmin = Role::findByName('Superadmin', 'web');
         $admin = Role::findByName('Admin', 'web');
         $user = Role::findByName('User', 'web');
