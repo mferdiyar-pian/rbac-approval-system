@@ -48,4 +48,13 @@ class Transaction extends Model
     {
         return $this->belongsTo(User::class, 'approver_id');
     }
+
+    /**
+     * Scope query untuk eager loading relasi pengguna dalam workflow alur transaksi
+     * (checker, approver, inputer) guna memuat data relasi secara efisien dan mencegah N+1 problem.
+     */
+    public function scopeWithWorkflowUsers($query)
+    {
+        return $query->with(['checker', 'approver', 'inputer']);
+    }
 }

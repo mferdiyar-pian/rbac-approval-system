@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 class TransactionController extends Controller
 {
     // Menampilkan daftar transaksi (Semua transaksi untuk Superadmin/Admin, milik sendiri untuk Inputer)
+    // Menggunakan eager loading with(['checker', 'approver', 'inputer']) untuk memuat relasi pengguna alur secara efisien dan mencegah N+1 query.
     public function index()
     {
         $user = Auth::user();
