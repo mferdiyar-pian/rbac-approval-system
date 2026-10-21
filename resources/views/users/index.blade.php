@@ -35,46 +35,46 @@
         </div>
     @endif
 
-    <!-- Summary Cards -->
+    <!-- Summary Cards Statistik Akun & Role -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+            <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg">
                 👥
             </div>
             <div>
-                <p class="text-xs text-gray-500 font-medium">Total Akun</p>
+                <p class="text-xs text-gray-500 font-medium">Total Akun Terdaftar</p>
                 <p class="text-xl font-bold text-gray-800">{{ $users->count() }}</p>
             </div>
         </div>
         <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold">
+            <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-lg">
                 👑
             </div>
             <div>
                 <p class="text-xs text-gray-500 font-medium">Superadmin & Admin</p>
-                <p class="text-xl font-bold text-gray-800">
+                <p class="text-xl font-bold text-purple-700">
                     {{ $users->filter(fn($u) => $u->hasAnyRole(['Superadmin', 'Admin']))->count() }}
                 </p>
             </div>
         </div>
         <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-lg">
                 🔍
             </div>
             <div>
                 <p class="text-xs text-gray-500 font-medium">Checker & Approver</p>
-                <p class="text-xl font-bold text-gray-800">
+                <p class="text-xl font-bold text-amber-700">
                     {{ $users->filter(fn($u) => $u->hasAnyRole(['Checker', 'Approver']))->count() }}
                 </p>
             </div>
         </div>
         <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-lg">
                 📝
             </div>
             <div>
                 <p class="text-xs text-gray-500 font-medium">Inputer (Maker)</p>
-                <p class="text-xl font-bold text-gray-800">
+                <p class="text-xl font-bold text-emerald-700">
                     {{ $users->filter(fn($u) => $u->hasRole('Inputer'))->count() }}
                 </p>
             </div>
