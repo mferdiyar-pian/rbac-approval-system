@@ -256,7 +256,7 @@
                                     <!-- Tombol Hapus (Admin/Superadmin: Semua status, Inputer: Hanya Draft miliknya) -->
                                     @if(auth()->user()->hasAnyRole(['Superadmin', 'Admin']) || (auth()->id() === $transaction->inputer_id && $transaction->status === 'draft'))
                                     <form action="{{ route('transactions.destroy', $transaction) }}" method="POST"
-                                          onsubmit="return confirm('Apakah kamu yakin ingin menghapus transaksi {{ $transaction->transaction_number }}? Tindakan ini tidak dapat dibatalkan.')"
+                                          onsubmit="return confirm('{{ auth()->user()->hasAnyRole(['Superadmin', 'Admin']) ? "Hapus transaksi " . $transaction->transaction_number . " (Status: " . $transaction->status . ") sesuai kebijakan sistem?" : "Apakah kamu yakin ingin menghapus draft transaksi " . $transaction->transaction_number . "?" }}')"
                                           class="inline">
                                         @csrf
                                         @method('DELETE')

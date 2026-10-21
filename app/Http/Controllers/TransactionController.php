@@ -351,8 +351,8 @@ class TransactionController extends Controller
     }
 
     // Hapus Transaksi:
-    // - Admin & Superadmin: Bisa menghapus transaksi apapun.
-    // - Inputer: Bisa menghapus transaksi miliknya jika masih berstatus draft.
+    // - Admin & Superadmin: Memiliki kewenangan menghapus transaksi sesuai kebijakan sistem.
+    // - Inputer: Dibatasi secara ketat hanya dapat menghapus transaksi miliknya sendiri yang masih berstatus draft.
     public function destroy(Transaction $transaction)
     {
         $user = auth()->user();
@@ -362,14 +362,21 @@ class TransactionController extends Controller
             abort_unless(
                 $transaction->inputer_id === $user->id && $transaction->status === 'draft',
                 403,
-                'Hanya transaksi berstatus draft atau melalui akun Admin/Superadmin yang dapat dihapus.'
+                'Inputer hanya dapat menghapus transaksi miliknya sendiri yang masih berstatus draft.'
             );
         }
 
         $number = $transaction->transaction_number;
+        $status = $transaction->status;
+        $inputerName = $transaction->inputer->name ?? 'User #' . $transaction->inputer_id;
+
         $transaction->delete();
 
-        AuditLog::record('DELETE_TRANSACTION', "Menghapus transaksi {$number}");
+        if ($isAdminOrSuperadmin) {
+            AuditLog::record('DELETE_TRANSACTION', "Admin/Superadmin menghapus transaksi {$number} (Status: {$status}, Pembuat: {$inputerName}) sesuai kewenangan kebijakan sistem");
+        } else {
+            AuditLog::record('DELETE_DRAFT_TRANSACTION', "Inputer menghapus draft transaksi {$number}");
+        }
 
         return redirect()
             ->route('transactions.index')
