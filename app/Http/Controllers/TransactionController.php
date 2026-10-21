@@ -310,11 +310,38 @@ class TransactionController extends Controller
         }
 
         $validated = $request->validate($rules);
-        $transaction->update($validated);
 
         if ($isAdminOrSuperadmin) {
-            AuditLog::record('CORRECT_TRANSACTION', "Admin/Superadmin mengoreksi transaksi {$transaction->transaction_number} (Nominal: Rp " . number_format((float) $transaction->amount, 0, ',', '.') . ", Status: {$transaction->status})");
+            $oldStatus = $transaction->status;
+            $newStatus = $validated['status'];
+
+            // Sinkronisasi data tahapan jika status dioverride oleh Admin/Superadmin
+            if ($oldStatus !== $newStatus) {
+                if ($newStatus === 'pending_approval' && !$transaction->checked_at) {
+                    $validated['checked_at'] = now();
+                    $validated['checker_id'] = $transaction->checker_id ?? $user->id;
+                } elseif ($newStatus === 'approved') {
+                    if (!$transaction->checked_at) {
+                        $validated['checked_at'] = now();
+                        $validated['checker_id'] = $transaction->checker_id ?? $user->id;
+                    }
+                    if (!$transaction->approved_at) {
+                        $validated['approved_at'] = now();
+                        $validated['approver_id'] = $transaction->approver_id ?? $user->id;
+                    }
+                }
+            }
+
+            $transaction->update($validated);
+
+            if ($oldStatus !== $newStatus) {
+                $note = !empty($validated['rejection_note']) ? ". Catatan: {$validated['rejection_note']}" : "";
+                AuditLog::record('OVERRIDE_STATUS', "Admin/Superadmin melakukan override status alur transaksi {$transaction->transaction_number} dari '{$oldStatus}' menjadi '{$newStatus}'{$note}");
+            } else {
+                AuditLog::record('CORRECT_TRANSACTION', "Admin/Superadmin mengoreksi data transaksi {$transaction->transaction_number} (Nominal: Rp " . number_format((float) $transaction->amount, 0, ',', '.') . ")");
+            }
         } else {
+            $transaction->update($validated);
             AuditLog::record('EDIT_DRAFT_TRANSACTION', "Inputer memperbarui draft transaksi {$transaction->transaction_number} (Nominal: Rp " . number_format((float) $transaction->amount, 0, ',', '.') . ")");
         }
 

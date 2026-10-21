@@ -114,37 +114,46 @@
                 </div>
 
                 @if ($isAdminOrSuperadmin)
-                <!-- Status Alur (Khusus Admin / Superadmin) -->
-                <div>
-                    <label for="status" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                        Status Alur Persetujuan <span class="text-red-500">*</span>
-                    </label>
-                    <select
-                        name="status"
-                        id="status"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-sm text-gray-800 transition-all"
-                    >
-                        <option value="draft" {{ old('status', $transaction->status) === 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="pending_check" {{ old('status', $transaction->status) === 'pending_check' ? 'selected' : '' }}>Menunggu Checker (pending_check)</option>
-                        <option value="pending_approval" {{ old('status', $transaction->status) === 'pending_approval' ? 'selected' : '' }}>Lolos Checker / Menunggu Approver (pending_approval)</option>
-                        <option value="approved" {{ old('status', $transaction->status) === 'approved' ? 'selected' : '' }}>Disetujui Selesai (approved)</option>
-                        <option value="rejected" {{ old('status', $transaction->status) === 'rejected' ? 'selected' : '' }}>Ditolak (rejected)</option>
-                    </select>
-                    <p class="text-[11px] text-gray-500 mt-1">Superadmin & Admin memiliki wewenang override mengubah status transaksi langsung.</p>
-                </div>
+                <!-- Box Wewenang Override Status Alur (Khusus Admin / Superadmin) -->
+                <div class="p-4 bg-amber-50/70 border border-amber-200 rounded-xl space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-amber-200 text-amber-900">
+                            Wewenang Override
+                        </span>
+                        <span class="text-xs font-bold text-amber-900">Penyesuaian Status Alur Transaksi</span>
+                    </div>
 
-                <!-- Catatan Penolakan (Opsional / Jika Ditolak) -->
-                <div>
-                    <label for="rejection_note" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                        Catatan / Alasan Penolakan (Opsional)
-                    </label>
-                    <textarea
-                        name="rejection_note"
-                        id="rejection_note"
-                        rows="2"
-                        class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-sm text-gray-800 transition-all"
-                        placeholder="Isi catatan jika transaksi ditolak..."
-                    >{{ old('rejection_note', $transaction->rejection_note) }}</textarea>
+                    <div>
+                        <label for="status" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Status Alur Persetujuan <span class="text-red-500">*</span>
+                        </label>
+                        <select
+                            name="status"
+                            id="status"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-sm text-gray-800 transition-all bg-white"
+                        >
+                            <option value="draft" {{ old('status', $transaction->status) === 'draft' ? 'selected' : '' }}>Draft</option>
+                            <option value="pending_check" {{ old('status', $transaction->status) === 'pending_check' ? 'selected' : '' }}>Menunggu Checker (pending_check)</option>
+                            <option value="pending_approval" {{ old('status', $transaction->status) === 'pending_approval' ? 'selected' : '' }}>Lolos Checker / Menunggu Approver (pending_approval)</option>
+                            <option value="approved" {{ old('status', $transaction->status) === 'approved' ? 'selected' : '' }}>Disetujui Selesai (approved)</option>
+                            <option value="rejected" {{ old('status', $transaction->status) === 'rejected' ? 'selected' : '' }}>Ditolak (rejected)</option>
+                        </select>
+                        <p class="text-[11px] text-amber-800/80 mt-1">Superadmin & Admin memiliki wewenang override mengubah status alur transaksi secara langsung.</p>
+                    </div>
+
+                    <!-- Catatan Penolakan (Opsional / Jika Ditolak) -->
+                    <div>
+                        <label for="rejection_note" class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                            Catatan / Alasan Penolakan (Opsional)
+                        </label>
+                        <textarea
+                            name="rejection_note"
+                            id="rejection_note"
+                            rows="2"
+                            class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-sm text-gray-800 transition-all bg-white"
+                            placeholder="Isi catatan jika status diubah menjadi ditolak..."
+                        >{{ old('rejection_note', $transaction->rejection_note) }}</textarea>
+                    </div>
                 </div>
                 @else
                 <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-600">
