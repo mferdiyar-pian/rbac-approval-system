@@ -277,17 +277,16 @@
 
             <!-- Main Content -->
             <div id="main-content" class="flex-1 flex flex-col min-w-0">
-                <!-- Top Header -->
                 @isset($header)
                 <header class="bg-white border-b border-gray-100 px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-                    <div>
+                    <div class="flex-1 min-w-0 mr-4">
                         {{ $header }}
                     </div>
-                    <div class="hidden lg:flex items-center gap-3 text-xs text-gray-400">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="hidden lg:flex items-center gap-2 text-xs text-gray-500 bg-gray-50 border border-gray-200/80 px-3 py-1.5 rounded-lg flex-shrink-0">
+                        <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
-                        <span id="clock-display">{{ now()->setTimezone('Asia/Makassar')->format('d M Y, H:i') }} WITA</span>
+                        <span id="clock-display" class="font-medium text-gray-600">{{ now()->setTimezone('Asia/Makassar')->format('d M Y, H:i') }} WITA</span>
                     </div>
                 </header>
                 @endisset

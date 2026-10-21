@@ -2,20 +2,20 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
                     @if(auth()->user()->hasRole('Inputer') && !auth()->user()->hasAnyRole(['Superadmin', 'Admin', 'Checker', 'Approver']))
                         <span>Transaksi Saya</span>
-                        <span class="ml-2.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">Mode Inputer</span>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">Mode Inputer</span>
                     @else
                         <span>Semua Transaksi</span>
-                        <span class="ml-2.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">Mode Pengawas Sistem (Superadmin & Admin)</span>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">Mode Pengawas Sistem</span>
                     @endif
                 </h2>
                 <p class="text-sm text-gray-500 mt-0.5">
                     @if(auth()->user()->hasRole('Inputer') && !auth()->user()->hasAnyRole(['Superadmin', 'Admin', 'Checker', 'Approver']))
-                        Daftar semua transaksi yang kamu buat dan lacak status alurnya
+                        Daftar transaksi yang kamu buat dan pelacakan status alurnya
                     @else
-                        Memantau seluruh transaksi dan riwayat approval dalam sistem
+                        Memantau seluruh transaksi dan riwayat approval alur kerja sistem
                     @endif
                 </p>
             </div>
@@ -31,9 +31,9 @@
         </div>
     </x-slot>
 
-    <!-- Flash Success -->
+    {{-- Flash Success --}}
     @if (session('success'))
-        <div class="mb-5 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-5 py-3 rounded-xl shadow-sm" id="flash-success">
+        <div class="mb-5 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-5 py-3.5 rounded-xl shadow-sm" id="flash-success">
             <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
             </svg>
@@ -41,16 +41,69 @@
         </div>
     @endif
 
+    @if (session('error'))
+        <div class="mb-5 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-5 py-3.5 rounded-xl shadow-sm">
+            <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            <p class="text-sm font-medium">{{ session('error') }}</p>
+        </div>
+    @endif
+
+    {{-- Statistik Transaksi --}}
+    @php
+        $totalCount = $transactions->count();
+        $draftCount = $transactions->where('status', 'draft')->count();
+        $pendingCheckCount = $transactions->where('status', 'pending_check')->count();
+        $pendingApprovalCount = $transactions->where('status', 'pending_approval')->count();
+        $approvedCount = $transactions->where('status', 'approved')->count();
+        $rejectedCount = $transactions->where('status', 'rejected')->count();
+
+        $stats = [
+            ['label' => 'Total Transaksi', 'value' => $totalCount, 'color' => 'indigo', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'],
+            ['label' => 'Menunggu Checker', 'value' => $pendingCheckCount, 'color' => 'amber', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
+            ['label' => 'Menunggu Approver', 'value' => $pendingApprovalCount, 'color' => 'blue', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
+            ['label' => 'Selesai Disetujui', 'value' => $approvedCount, 'color' => 'emerald', 'icon' => 'M5 13l4 4L19 7'],
+        ];
+    @endphp
+
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        @foreach ($stats as $st)
+            <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-{{ $st['color'] }}-50 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-{{ $st['color'] }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $st['icon'] }}"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500 font-medium leading-tight">{{ $st['label'] }}</p>
+                    <p class="text-2xl font-bold text-gray-800 leading-tight">{{ $st['value'] }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
     <div x-data="{
         showModal: false,
         activeTx: null,
+        statusFilter: 'all',
+        searchQuery: '',
         openDetail(tx) {
             this.activeTx = tx;
             this.showModal = true;
+        },
+        matches(tx) {
+            const matchesStatus = this.statusFilter === 'all' || tx.status === this.statusFilter;
+            const q = this.searchQuery.toLowerCase().trim();
+            const matchesSearch = !q ||
+                tx.number.toLowerCase().includes(q) ||
+                tx.description.toLowerCase().includes(q) ||
+                (tx.inputer_name && tx.inputer_name.toLowerCase().includes(q));
+            return matchesStatus && matchesSearch;
         }
     }">
 
-        <!-- Banner Panduan Alur Approval (Biar Pengguna Belajar Mengerti Alurnya) -->
+        <!-- Banner Panduan Alur Approval -->
         <div class="mb-6 bg-gradient-to-r from-indigo-50 via-white to-blue-50 border border-indigo-100 rounded-2xl p-5 shadow-sm">
             <div class="flex items-start gap-4">
                 <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-md">
@@ -64,8 +117,8 @@
                         <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
                             <span class="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-[11px]">1</span>
                             <div>
-                                <p class="font-semibold text-gray-800">Inputer</p>
-                                <p class="text-gray-500">Buat & Ajukan transaksi</p>
+                                <p class="font-semibold text-gray-800">Inputer (Maker)</p>
+                                <p class="text-gray-500">Buat & ajukan transaksi</p>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border border-gray-200">
@@ -83,218 +136,296 @@
                             </div>
                         </div>
                     </div>
-                    <p class="mt-2.5 text-xs text-indigo-900 bg-indigo-100/60 px-3 py-1.5 rounded-lg inline-block">
-                        <strong>📌 Catatan Uji Coba:</strong> Setelah Checker meloloskan transaksi, status menjadi <strong>"Lolos Checker (Menunggu Approver)"</strong>. Untuk menyelesaikan sampai disetujui, login dengan akun <strong>Approver</strong> (<code class="bg-white/80 px-1 py-0.5 rounded font-mono">approver@example.com</code> / sandi: <code class="bg-white/80 px-1 py-0.5 rounded font-mono">BelajarRBAC123!</code>).
-                    </p>
                 </div>
             </div>
         </div>
 
+        {{-- Filter & Search Bar --}}
+        <div class="mb-5 bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            {{-- Filter Pills --}}
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs font-medium">
+                <button
+                    type="button"
+                    @click="statusFilter = 'all'"
+                    :class="statusFilter === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                    class="px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                    Semua ({{ $totalCount }})
+                </button>
+                <button
+                    type="button"
+                    @click="statusFilter = 'draft'"
+                    :class="statusFilter === 'draft' ? 'bg-gray-700 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                    class="px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                    Draft ({{ $draftCount }})
+                </button>
+                <button
+                    type="button"
+                    @click="statusFilter = 'pending_check'"
+                    :class="statusFilter === 'pending_check' ? 'bg-amber-600 text-white shadow-sm' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                    Antrean Checker ({{ $pendingCheckCount }})
+                </button>
+                <button
+                    type="button"
+                    @click="statusFilter = 'pending_approval'"
+                    :class="statusFilter === 'pending_approval' ? 'bg-blue-600 text-white shadow-sm' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                    Antrean Approver ({{ $pendingApprovalCount }})
+                </button>
+                <button
+                    type="button"
+                    @click="statusFilter = 'approved'"
+                    :class="statusFilter === 'approved' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                    Disetujui ({{ $approvedCount }})
+                </button>
+                @if($rejectedCount > 0)
+                <button
+                    type="button"
+                    @click="statusFilter = 'rejected'"
+                    :class="statusFilter === 'rejected' ? 'bg-red-600 text-white shadow-sm' : 'bg-red-50 text-red-700 hover:bg-red-100'"
+                    class="px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                    Ditolak ({{ $rejectedCount }})
+                </button>
+                @endif
+            </div>
+
+            {{-- Input Pencarian --}}
+            <div class="relative min-w-[220px]">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </span>
+                <input
+                    type="text"
+                    x-model="searchQuery"
+                    placeholder="Cari transaksi / deskripsi..."
+                    class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-gray-800 placeholder:text-gray-400"
+                >
+            </div>
+        </div>
+
+        @php
+            $showInputerCol = (!auth()->user()->hasRole('Inputer') || auth()->user()->hasAnyRole(['Superadmin', 'Admin', 'Checker', 'Approver']));
+            $totalColSpan = $showInputerCol ? 8 : 7;
+        @endphp
+
         <!-- Table Card -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="bg-gray-50/80 border-b border-gray-200">
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">No.</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nomor Transaksi</th>
-                        @if(!auth()->user()->hasRole('Inputer') || auth()->user()->hasAnyRole(['Superadmin', 'Admin', 'Checker', 'Approver']))
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Inputer</th>
-                        @endif
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Deskripsi</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status & Alur</th>
-                        <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal (WITA)</th>
-                        <th class="px-5 py-3.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse ($transactions as $transaction)
-                        @php
-                            $txData = [
-                                'id' => $transaction->id,
-                                'number' => $transaction->transaction_number,
-                                'description' => $transaction->description,
-                                'amount' => number_format((float) $transaction->amount, 0, ',', '.'),
-                                'status' => $transaction->status,
-                                'created_at' => $transaction->created_at->format('d M Y, H:i') . ' WITA',
-                                'submitted_at' => $transaction->submitted_at ? $transaction->submitted_at->format('d M Y, H:i') . ' WITA' : null,
-                                'checked_at' => $transaction->checked_at ? $transaction->checked_at->format('d M Y, H:i') . ' WITA' : null,
-                                'approved_at' => $transaction->approved_at ? $transaction->approved_at->format('d M Y, H:i') . ' WITA' : null,
-                                'inputer_name' => $transaction->inputer->name ?? 'Inputer',
-                                'checker_name' => $transaction->checker->name ?? null,
-                                'approver_name' => $transaction->approver->name ?? null,
-                                'rejection_note' => $transaction->rejection_note ?? null,
-                            ];
-                        @endphp
-                        <tr class="hover:bg-gray-50/80 transition-colors">
-                            <td class="px-5 py-4 text-gray-400 font-medium">{{ $loop->iteration }}</td>
-                            <td class="px-5 py-4">
-                                <span class="font-mono text-xs font-semibold bg-gray-100 text-gray-800 px-2 py-1 rounded border border-gray-200">
-                                    {{ $transaction->transaction_number }}
-                                </span>
-                            </td>
-                            @if(!auth()->user()->hasRole('Inputer') || auth()->user()->hasAnyRole(['Superadmin', 'Admin', 'Checker', 'Approver']))
-                            <td class="px-5 py-4">
-                                <span class="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded">
-                                    {{ $transaction->inputer->name ?? '-' }}
-                                </span>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50/80 border-b border-gray-200">
+                            <th class="px-5 py-3.5 text-center w-12 text-xs font-semibold text-gray-500 uppercase tracking-wider">No.</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nomor Transaksi</th>
+                            @if($showInputerCol)
+                            <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Inputer</th>
                             @endif
-                            <td class="px-5 py-4 text-gray-700 max-w-xs">
-                                <span class="line-clamp-2">{{ $transaction->description }}</span>
-                            </td>
-                            <td class="px-5 py-4 font-bold text-gray-800 whitespace-nowrap">
-                                Rp {{ number_format((float) $transaction->amount, 0, ',', '.') }}
-                            </td>
-
-                            <!-- Status & Alur -->
-                            <td class="px-5 py-4">
-                                @if ($transaction->status === 'draft')
-                                    <div class="flex flex-col gap-1 items-start">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
-                                            Draft
-                                        </span>
-                                        <span class="text-[11px] text-gray-400">Belum diajukan</span>
-                                    </div>
-
-                                @elseif ($transaction->status === 'pending_check')
-                                    <div class="flex flex-col gap-1 items-start">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                                            Menunggu Checker
-                                        </span>
-                                        <span class="text-[11px] text-amber-600 font-medium">Sedang dalam antrean Checker</span>
-                                    </div>
-
-                                @elseif ($transaction->status === 'pending_approval')
-                                    <div class="flex flex-col gap-1 items-start">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
-                                            <svg class="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                            </svg>
-                                            Lolos Checker — Menunggu Approver
-                                        </span>
-                                        <span class="text-[11px] text-gray-600">
-                                            ✓ Diperiksa oleh: <strong class="text-gray-800">{{ $transaction->checker->name ?? 'Checker' }}</strong>
-                                        </span>
-                                    </div>
-
-                                @elseif ($transaction->status === 'approved')
-                                    <div class="flex flex-col gap-1 items-start">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                            </svg>
-                                            Disetujui Selesai
-                                        </span>
-                                        <span class="text-[11px] text-gray-600">
-                                            ✓ Oleh: <strong class="text-gray-800">{{ $transaction->approver->name ?? 'Approver' }}</strong>
-                                        </span>
-                                    </div>
-
-                                @elseif ($transaction->status === 'rejected')
-                                    <div class="flex flex-col gap-1 items-start">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-800 border border-red-200">
-                                            <svg class="w-3.5 h-3.5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                            </svg>
-                                            Ditolak
-                                        </span>
-                                        @if ($transaction->rejection_note)
-                                            <span class="text-[11px] text-red-600 italic line-clamp-1 max-w-[200px]" title="{{ $transaction->rejection_note }}">
-                                                "{{ $transaction->rejection_note }}"
-                                            </span>
-                                        @endif
-                                    </div>
+                            <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nominal</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status & Alur</th>
+                            <th class="px-5 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal (WITA)</th>
+                            <th class="px-5 py-3.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse ($transactions as $transaction)
+                            @php
+                                $txData = [
+                                    'id' => $transaction->id,
+                                    'number' => $transaction->transaction_number,
+                                    'description' => $transaction->description,
+                                    'amount' => number_format((float) $transaction->amount, 0, ',', '.'),
+                                    'status' => $transaction->status,
+                                    'created_at' => $transaction->created_at->format('d M Y, H:i') . ' WITA',
+                                    'submitted_at' => $transaction->submitted_at ? $transaction->submitted_at->format('d M Y, H:i') . ' WITA' : null,
+                                    'checked_at' => $transaction->checked_at ? $transaction->checked_at->format('d M Y, H:i') . ' WITA' : null,
+                                    'approved_at' => $transaction->approved_at ? $transaction->approved_at->format('d M Y, H:i') . ' WITA' : null,
+                                    'inputer_name' => $transaction->inputer->name ?? 'Inputer',
+                                    'checker_name' => $transaction->checker->name ?? null,
+                                    'approver_name' => $transaction->approver->name ?? null,
+                                    'rejection_note' => $transaction->rejection_note ?? null,
+                                ];
+                            @endphp
+                            <tr
+                                x-show="matches({{ json_encode($txData) }})"
+                                class="hover:bg-gray-50/80 transition-colors">
+                                <td class="px-5 py-4 text-center text-gray-400 font-medium text-xs">{{ $loop->iteration }}</td>
+                                <td class="px-5 py-4">
+                                    <span class="font-mono text-xs font-semibold bg-gray-100 text-gray-800 px-2 py-1 rounded border border-gray-200">
+                                        {{ $transaction->transaction_number }}
+                                    </span>
+                                </td>
+                                @if($showInputerCol)
+                                <td class="px-5 py-4">
+                                    <span class="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded">
+                                        {{ $transaction->inputer->name ?? '-' }}
+                                    </span>
+                                </td>
                                 @endif
-                            </td>
+                                <td class="px-5 py-4 text-gray-700 max-w-xs">
+                                    <span class="line-clamp-2">{{ $transaction->description }}</span>
+                                </td>
+                                <td class="px-5 py-4 font-bold text-gray-800 whitespace-nowrap">
+                                    Rp {{ number_format((float) $transaction->amount, 0, ',', '.') }}
+                                </td>
 
-                            <td class="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
-                                {{ $transaction->created_at->format('d M Y, H:i') }} <span class="text-[10px] font-semibold text-gray-400">WITA</span>
-                            </td>
-
-                            <!-- Kolom Aksi -->
-                            <td class="px-5 py-4 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center gap-2">
+                                <!-- Status & Alur -->
+                                <td class="px-5 py-4">
                                     @if ($transaction->status === 'draft')
-                                        <form action="{{ route('transactions.submit', $transaction) }}" method="POST">
-                                            @csrf
-                                            <button type="submit"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all hover:-translate-y-0.5">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                        <div class="flex flex-col gap-1 items-start">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                                Draft
+                                            </span>
+                                            <span class="text-[11px] text-gray-400">Belum diajukan</span>
+                                        </div>
+
+                                    @elseif ($transaction->status === 'pending_check')
+                                        <div class="flex flex-col gap-1 items-start">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                Menunggu Checker
+                                            </span>
+                                            <span class="text-[11px] text-amber-600 font-medium">Sedang dalam antrean Checker</span>
+                                        </div>
+
+                                    @elseif ($transaction->status === 'pending_approval')
+                                        <div class="flex flex-col gap-1 items-start">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-200">
+                                                <svg class="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                                                 </svg>
-                                                Ajukan
+                                                Lolos Checker — Menunggu Approver
+                                            </span>
+                                            <span class="text-[11px] text-gray-600">
+                                                ✓ Diperiksa oleh: <strong class="text-gray-800">{{ $transaction->checker->name ?? 'Checker' }}</strong>
+                                            </span>
+                                        </div>
+
+                                    @elseif ($transaction->status === 'approved')
+                                        <div class="flex flex-col gap-1 items-start">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                                                <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Disetujui Selesai
+                                            </span>
+                                            <span class="text-[11px] text-gray-600">
+                                                ✓ Oleh: <strong class="text-gray-800">{{ $transaction->approver->name ?? 'Approver' }}</strong>
+                                            </span>
+                                        </div>
+
+                                    @elseif ($transaction->status === 'rejected')
+                                        <div class="flex flex-col gap-1 items-start">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-800 border border-red-200">
+                                                <svg class="w-3.5 h-3.5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                                </svg>
+                                                Ditolak
+                                            </span>
+                                            @if ($transaction->rejection_note)
+                                                <span class="text-[11px] text-red-600 italic line-clamp-1 max-w-[200px]" title="{{ $transaction->rejection_note }}">
+                                                    "{{ $transaction->rejection_note }}"
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </td>
+
+                                <td class="px-5 py-4 text-gray-500 text-xs whitespace-nowrap">
+                                    {{ $transaction->created_at->format('d M Y, H:i') }} <span class="text-[10px] font-semibold text-gray-400">WITA</span>
+                                </td>
+
+                                <!-- Kolom Aksi -->
+                                <td class="px-5 py-4 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        @if ($transaction->status === 'draft')
+                                            <form action="{{ route('transactions.submit', $transaction) }}" method="POST">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all hover:-translate-y-0.5">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                                    </svg>
+                                                    Ajukan
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <!-- Tombol Detail / Lacak Alur -->
+                                        <button
+                                            type="button"
+                                            @click="openDetail({{ json_encode($txData) }})"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
+                                            title="Lacak status & riwayat persetujuan">
+                                            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                            Lacak
+                                        </button>
+
+                                        <!-- Tombol Edit (Admin/Superadmin: Semua status, Inputer: Hanya Draft miliknya) -->
+                                        @if(auth()->user()->hasAnyRole(['Superadmin', 'Admin']) || (auth()->id() === $transaction->inputer_id && $transaction->status === 'draft'))
+                                        <a href="{{ route('transactions.edit', $transaction) }}"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold rounded-lg border border-amber-200 transition-colors"
+                                           title="Edit / Koreksi Transaksi">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                            Edit
+                                        </a>
+                                        @endif
+
+                                        <!-- Tombol Hapus (Admin/Superadmin: Semua status, Inputer: Hanya Draft miliknya) -->
+                                        @if(auth()->user()->hasAnyRole(['Superadmin', 'Admin']) || (auth()->id() === $transaction->inputer_id && $transaction->status === 'draft'))
+                                        <form action="{{ route('transactions.destroy', $transaction) }}" method="POST"
+                                              onsubmit="return confirm('{{ auth()->user()->hasAnyRole(['Superadmin', 'Admin']) ? "Hapus transaksi " . $transaction->transaction_number . " (Status: " . $transaction->status . ") sesuai kebijakan sistem?" : "Apakah kamu yakin ingin menghapus draft transaksi " . $transaction->transaction_number . "?" }}')"
+                                              class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold rounded-lg border border-red-200 transition-colors"
+                                                title="Hapus Transaksi">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                                Hapus
                                             </button>
                                         </form>
-                                    @endif
-
-                                    <!-- Tombol Detail / Lacak Alur -->
-                                    <button
-                                        type="button"
-                                        @click="openDetail({{ json_encode($txData) }})"
-                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-indigo-50 hover:text-indigo-700 text-gray-700 text-xs font-medium rounded-lg border border-gray-200 transition-colors"
-                                        title="Lacak status & riwayat persetujuan">
-                                        <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                        Lacak
-                                    </button>
-
-                                    <!-- Tombol Edit (Admin/Superadmin: Semua status, Inputer: Hanya Draft miliknya) -->
-                                    @if(auth()->user()->hasAnyRole(['Superadmin', 'Admin']) || (auth()->id() === $transaction->inputer_id && $transaction->status === 'draft'))
-                                    <a href="{{ route('transactions.edit', $transaction) }}"
-                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-semibold rounded-lg border border-amber-200 transition-colors"
-                                       title="Edit / Koreksi Transaksi">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                        Edit
-                                    </a>
-                                    @endif
-
-                                    <!-- Tombol Hapus (Admin/Superadmin: Semua status, Inputer: Hanya Draft miliknya) -->
-                                    @if(auth()->user()->hasAnyRole(['Superadmin', 'Admin']) || (auth()->id() === $transaction->inputer_id && $transaction->status === 'draft'))
-                                    <form action="{{ route('transactions.destroy', $transaction) }}" method="POST"
-                                          onsubmit="return confirm('{{ auth()->user()->hasAnyRole(['Superadmin', 'Admin']) ? "Hapus transaksi " . $transaction->transaction_number . " (Status: " . $transaction->status . ") sesuai kebijakan sistem?" : "Apakah kamu yakin ingin menghapus draft transaksi " . $transaction->transaction_number . "?" }}')"
-                                          class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold rounded-lg border border-red-200 transition-colors"
-                                            title="Hapus Transaksi">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ $totalColSpan }}" class="px-5 py-16 text-center">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">
+                                            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                             </svg>
-                                            Hapus
-                                        </button>
-                                    </form>
-                                    @endif
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-5 py-16 text-center">
-                                <div class="flex flex-col items-center gap-3">
-                                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                    <p class="text-gray-500 font-medium">Belum ada transaksi</p>
-                                    @can('create transactions')
-                                    <a href="{{ route('transactions.create') }}"
-                                       class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold underline underline-offset-2">
-                                        Buat transaksi pertamamu
-                                    </a>
-                                    @endcan
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                        </div>
+                                        <p class="text-gray-600 font-semibold text-sm">Belum ada transaksi</p>
+                                        <p class="text-gray-400 text-xs">Transaksi yang dibuat akan tampil dalam tabel ini.</p>
+                                        @can('create transactions')
+                                        <a href="{{ route('transactions.create') }}"
+                                           class="mt-2 inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                            </svg>
+                                            Buat Transaksi Pertama
+                                        </a>
+                                        @endcan
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- Modal Timeline / Lacak Status Transaksi -->
@@ -373,7 +504,7 @@
                         <div>
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Riwayat & Progres Alur</h4>
                             <div class="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-gray-200">
-                                
+
                                 <!-- Step 1: Inputer -->
                                 <div class="relative flex items-start gap-4">
                                     <div class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center flex-shrink-0 z-10 shadow-sm">
