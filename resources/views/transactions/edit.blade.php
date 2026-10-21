@@ -2,8 +2,20 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-xl font-bold text-gray-800">Edit Transaksi (Superadmin / Admin)</h2>
-                <p class="text-sm text-gray-500 mt-0.5">Perbaiki atau sesuaikan data transaksi secara langsung</p>
+                <h2 class="text-xl font-bold text-gray-800">
+                    @if ($isAdminOrSuperadmin)
+                        Koreksi Transaksi (Admin / Superadmin)
+                    @else
+                        Edit Draft Transaksi
+                    @endif
+                </h2>
+                <p class="text-sm text-gray-500 mt-0.5">
+                    @if ($isAdminOrSuperadmin)
+                        Koreksi data transaksi atau lakukan penyesuaian alur sesuai kewenangan sistem
+                    @else
+                        Perbarui rincian draft transaksi milikmu sebelum diajukan ke tahap pemeriksaan
+                    @endif
+                </p>
             </div>
             <a href="{{ route('transactions.index') }}"
                class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors">
@@ -36,14 +48,16 @@
         @endif
 
         <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-4 flex items-center justify-between text-white">
+            <div class="bg-gradient-to-r {{ $isAdminOrSuperadmin ? 'from-amber-600 to-amber-700' : 'from-indigo-600 to-indigo-700' }} px-6 py-4 flex items-center justify-between text-white">
                 <div class="flex items-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                     </svg>
-                    <h3 class="font-bold text-sm uppercase tracking-wider">Form Koreksi Transaksi</h3>
+                    <h3 class="font-bold text-sm uppercase tracking-wider">
+                        {{ $isAdminOrSuperadmin ? 'Form Koreksi Transaksi' : 'Form Edit Draft Transaksi' }}
+                    </h3>
                 </div>
-                <span class="text-xs bg-amber-800/60 px-2.5 py-1 rounded-full font-mono">{{ $transaction->transaction_number }}</span>
+                <span class="text-xs {{ $isAdminOrSuperadmin ? 'bg-amber-800/60' : 'bg-indigo-800/60' }} px-2.5 py-1 rounded-full font-mono">{{ $transaction->transaction_number }}</span>
             </div>
 
             <form action="{{ route('transactions.update', $transaction) }}" method="POST" class="p-6 space-y-5">
@@ -144,7 +158,7 @@
                         Batal
                     </a>
                     <button type="submit"
-                        class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all hover:-translate-y-0.5">
+                        class="px-5 py-2.5 {{ $isAdminOrSuperadmin ? 'bg-amber-600 hover:bg-amber-700' : 'bg-indigo-600 hover:bg-indigo-700' }} text-white text-sm font-semibold rounded-xl shadow-sm transition-all hover:-translate-y-0.5">
                         Simpan Perubahan
                     </button>
                 </div>

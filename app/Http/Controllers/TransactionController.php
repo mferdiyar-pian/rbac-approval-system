@@ -260,7 +260,7 @@ class TransactionController extends Controller
     }
 
     // Edit Transaksi:
-    // - Admin & Superadmin: Bisa mengedit transaksi siapapun dalam status apapun (koreksi data).
+    // - Admin & Superadmin: Bisa mengedit transaksi siapapun dalam status apapun (koreksi data / override alur).
     // - Inputer: Hanya bisa mengedit draft miliknya sendiri sebelum diajukan.
     public function edit(Transaction $transaction)
     {
@@ -271,7 +271,7 @@ class TransactionController extends Controller
             abort_unless(
                 $transaction->inputer_id === $user->id && $transaction->status === 'draft',
                 403,
-                'Transaksi yang sudah diajukan hanya dapat dikoreksi oleh Admin / Superadmin.'
+                'Inputer hanya dapat mengedit transaksi miliknya sendiri yang masih berstatus draft.'
             );
         }
 
@@ -288,7 +288,7 @@ class TransactionController extends Controller
             abort_unless(
                 $transaction->inputer_id === $user->id && $transaction->status === 'draft',
                 403,
-                'Transaksi yang sudah diajukan hanya dapat dikoreksi oleh Admin / Superadmin.'
+                'Inputer hanya dapat mengedit transaksi miliknya sendiri yang masih berstatus draft.'
             );
         }
 
@@ -303,7 +303,7 @@ class TransactionController extends Controller
             'amount' => ['required', 'numeric', 'min:0.01'],
         ];
 
-        // Hanya Admin/Superadmin yang bisa mengganti status alur secara manual
+        // Hanya Admin/Superadmin yang bisa mengganti status alur secara manual (override status alur)
         if ($isAdminOrSuperadmin) {
             $rules['status'] = ['required', 'in:draft,pending_check,pending_approval,approved,rejected'];
             $rules['rejection_note'] = ['nullable', 'string', 'max:1000'];
@@ -312,7 +312,11 @@ class TransactionController extends Controller
         $validated = $request->validate($rules);
         $transaction->update($validated);
 
-        AuditLog::record('EDIT_TRANSACTION', "Memperbarui data transaksi {$transaction->transaction_number} (Nominal: Rp " . number_format((float) $transaction->amount, 0, ',', '.') . ", Status: {$transaction->status})");
+        if ($isAdminOrSuperadmin) {
+            AuditLog::record('CORRECT_TRANSACTION', "Admin/Superadmin mengoreksi transaksi {$transaction->transaction_number} (Nominal: Rp " . number_format((float) $transaction->amount, 0, ',', '.') . ", Status: {$transaction->status})");
+        } else {
+            AuditLog::record('EDIT_DRAFT_TRANSACTION', "Inputer memperbarui draft transaksi {$transaction->transaction_number} (Nominal: Rp " . number_format((float) $transaction->amount, 0, ',', '.') . ")");
+        }
 
         return redirect()
             ->route('transactions.index')
