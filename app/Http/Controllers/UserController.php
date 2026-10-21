@@ -9,10 +9,17 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
+/**
+ * UserController
+ *
+ * Mengelola siklus hidup akun pengguna (CRUD) dan penetapan peran (Role Assignment)
+ * berdasarkan prinsip Role-Based Access Control (RBAC) serta Segregation of Duties.
+ * Hanya pengguna dengan permission 'manage users' (Superadmin & Admin) yang berhak mengakses.
+ */
 class UserController extends Controller
 {
     /**
-     * Tampilkan semua akun pengguna.
+     * Tampilkan semua akun pengguna beserta relasi role, permissions, dan jumlah transaksi.
      */
     public function index()
     {
@@ -31,7 +38,7 @@ class UserController extends Controller
     }
 
     /**
-     * Tampilkan form pembuatan akun baru.
+     * Tampilkan form pendaftaran akun pengguna baru.
      */
     public function create()
     {
@@ -47,7 +54,7 @@ class UserController extends Controller
     }
 
     /**
-     * Simpan akun pengguna baru ke database.
+     * Simpan akun pengguna baru ke database dan tetapkan role Spatie Permission.
      */
     public function store(Request $request)
     {
@@ -58,10 +65,10 @@ class UserController extends Controller
         );
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
-            'role' => ['required', 'string', 'exists:roles,name'],
+            'name'     => ['required', 'string', 'max:255'],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', Password::min(8)],
+            'role'     => ['required', 'string', 'exists:roles,name'],
         ]);
 
         $user = User::create([
