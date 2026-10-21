@@ -155,6 +155,8 @@ class TransactionController extends Controller
 
         $transaction->update([
             'status'         => 'rejected',
+            'checker_id'     => auth()->id(),
+            'checked_at'     => now(),
             'rejection_note' => $request->rejection_note,
         ]);
 
@@ -247,8 +249,9 @@ class TransactionController extends Controller
         ]);
 
         $transaction->update([
-            'status' => 'rejected',
-            'approver_id' => auth()->id(),
+            'status'         => 'rejected',
+            'approver_id'    => auth()->id(),
+            'approved_at'    => now(),
             'rejection_note' => $validated['rejection_note'],
         ]);
 
