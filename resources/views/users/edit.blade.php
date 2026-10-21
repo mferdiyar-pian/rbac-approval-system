@@ -112,6 +112,16 @@
                             </option>
                         @endforeach
                     </select>
+                    @if ($user->email === 'superadmin@example.com')
+                        <p class="text-[11px] text-amber-600 font-medium mt-1.5 flex items-center gap-1">
+                            ⚠️ Akun Superadmin utama diproteksi sistem agar akses administrasi tidak terkunci.
+                        </p>
+                    @endif
+                    @if ($user->id === auth()->id())
+                        <p class="text-[11px] text-indigo-600 font-medium mt-1.5 flex items-center gap-1">
+                            ℹ️ Ini adalah akun aktif Anda. Sistem memproteksi akun aktif agar tidak dapat dihapus sendiri.
+                        </p>
+                    @endif
                 </div>
 
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
