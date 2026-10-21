@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Http\Controllers\AuditLogController;
@@ -10,191 +9,132 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Halaman Utama
+| 1. Route Publik (Tanpa Autentikasi)
 |--------------------------------------------------------------------------
 */
-
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
-| Dashboard
+| 2. Route Terautentikasi (Auth Middleware Group)
 |--------------------------------------------------------------------------
+| Seluruh endpoint di dalam grup ini mewajibkan pengguna login terlebih dahulu.
 */
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-/*
-|--------------------------------------------------------------------------
-| Halaman RBAC
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/rbac', [RbacController::class, 'index'])
-    ->middleware('auth')
-    ->name('rbac.index');
-
-/*
-|--------------------------------------------------------------------------
-| Profil Pengguna
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
 
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard & RBAC Overview
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->middleware('verified')->name('dashboard');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
-});
+    Route::get('/rbac', [RbacController::class, 'index'])
+        ->name('rbac.index');
 
-/*
-|--------------------------------------------------------------------------
-| Pengujian Permission
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Profil Pengguna
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-Route::middleware('auth')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Endpoint Pengujian Permission (RBAC Testing)
+    |--------------------------------------------------------------------------
+    | Digunakan untuk memvalidasi pembatasan akses hak otorisasi Spatie.
+    */
     Route::get('/test-inputer', function () {
         return 'Berhasil! Kamu memiliki izin membuat transaksi.';
-    })->middleware('permission:create transactions');
+    })->middleware('permission:create transactions')->name('test.inputer');
 
     Route::get('/test-approver', function () {
         return 'Berhasil! Kamu memiliki izin menyetujui transaksi.';
-    })->middleware('permission:approve transactions');
-});
-
-/*
-|--------------------------------------------------------------------------
-| Semua Fitur Transaksi
-|--------------------------------------------------------------------------
-*/
-
-Route::middleware('auth')->group(function () {
+    })->middleware('permission:approve transactions')->name('test.approver');
 
     /*
-    | Inputer
+    |--------------------------------------------------------------------------
+    | Alur Transaksi: Inputer (Maker)
+    |--------------------------------------------------------------------------
     */
-
-    // Daftar transaksi
-    Route::get('/transactions', [
-        TransactionController::class,
-        'index',
-    ])
+    Route::get('/transactions', [TransactionController::class, 'index'])
         ->middleware('permission:view transactions')
         ->name('transactions.index');
 
-    // Form input transaksi
-    Route::get('/transactions/create', [
-        TransactionController::class,
-        'create',
-    ])
+    Route::get('/transactions/create', [TransactionController::class, 'create'])
         ->middleware('permission:create transactions')
         ->name('transactions.create');
 
-    // Simpan transaksi
-    Route::post('/transactions', [
-        TransactionController::class,
-        'store',
-    ])
+    Route::post('/transactions', [TransactionController::class, 'store'])
         ->middleware('permission:create transactions')
         ->name('transactions.store');
 
-    // Ajukan transaksi ke Checker
-    Route::post('/transactions/{transaction}/submit', [
-        TransactionController::class,
-        'submit',
-    ])
+    Route::post('/transactions/{transaction}/submit', [TransactionController::class, 'submit'])
         ->middleware('permission:submit transactions')
         ->name('transactions.submit');
 
-
     /*
-    | Checker
+    |--------------------------------------------------------------------------
+    | Alur Transaksi: Checker (Pemeriksa)
+    |--------------------------------------------------------------------------
     */
-
-    // Daftar transaksi yang menunggu pemeriksaan
-    Route::get('/transactions/checker', [
-        TransactionController::class,
-        'checkerIndex',
-    ])
+    Route::get('/transactions/checker', [TransactionController::class, 'checkerIndex'])
         ->middleware('permission:check transactions')
         ->name('transactions.checker');
 
-    // Lolos pemeriksaan dan teruskan ke Approver
-    Route::post('/transactions/{transaction}/check', [
-        TransactionController::class,
-        'check',
-    ])
+    Route::post('/transactions/{transaction}/check', [TransactionController::class, 'check'])
         ->middleware('permission:check transactions')
         ->name('transactions.check');
 
-    // Tolak transaksi pada tahap pemeriksaan
-    Route::post('/transactions/{transaction}/reject-checker', [
-        TransactionController::class,
-        'rejectByChecker',
-    ])
+    Route::post('/transactions/{transaction}/reject-checker', [TransactionController::class, 'rejectByChecker'])
         ->middleware('permission:check transactions')
         ->name('transactions.reject-checker');
 
-
     /*
-    | Approver
+    |--------------------------------------------------------------------------
+    | Alur Transaksi: Approver (Penyetuju)
+    |--------------------------------------------------------------------------
     */
-
-    // Daftar transaksi yang menunggu persetujuan
-    Route::get('/transactions/approver', [
-        TransactionController::class,
-        'approverIndex',
-    ])
+    Route::get('/transactions/approver', [TransactionController::class, 'approverIndex'])
         ->middleware('permission:approve transactions')
         ->name('transactions.approver');
 
-    // Setujui transaksi
-    Route::post('/transactions/{transaction}/approve', [
-        TransactionController::class,
-        'approve',
-    ])
+    Route::post('/transactions/{transaction}/approve', [TransactionController::class, 'approve'])
         ->middleware('permission:approve transactions')
         ->name('transactions.approve');
 
-    // Tolak transaksi pada tahap persetujuan
-    Route::post('/transactions/{transaction}/reject-approver', [
-        TransactionController::class,
-        'rejectByApprover',
-    ])
+    Route::post('/transactions/{transaction}/reject-approver', [TransactionController::class, 'rejectByApprover'])
         ->middleware('permission:approve transactions')
         ->name('transactions.reject-approver');
 
-
     /*
-    | Edit & Hapus Transaksi (Admin/Superadmin: Semua status, Inputer: Draft miliknya)
+    |--------------------------------------------------------------------------
+    | Pengelolaan & Koreksi Transaksi (Edit, Update, Destroy)
+    |--------------------------------------------------------------------------
+    | Otorisasi peran:
+    | - Admin & Superadmin: Mengoreksi & menghapus transaksi sesuai kebijakan sistem.
+    | - Inputer: Terbatas hanya pada draft transaksi miliknya sendiri.
     */
-    Route::get('/transactions/{transaction}/edit', [
-        TransactionController::class,
-        'edit',
-    ])->name('transactions.edit');
+    Route::get('/transactions/{transaction}/edit', [TransactionController::class, 'edit'])
+        ->name('transactions.edit');
 
-    Route::put('/transactions/{transaction}', [
-        TransactionController::class,
-        'update',
-    ])->name('transactions.update');
+    Route::put('/transactions/{transaction}', [TransactionController::class, 'update'])
+        ->name('transactions.update');
 
-    Route::delete('/transactions/{transaction}', [
-        TransactionController::class,
-        'destroy',
-    ])->name('transactions.destroy');
-
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])
+        ->name('transactions.destroy');
 
     /*
-    | Superadmin: Manajemen Pengguna & Akun
+    |--------------------------------------------------------------------------
+    | Manajemen Pengguna & Akun (Superadmin / Admin)
+    |--------------------------------------------------------------------------
     */
     Route::middleware('permission:manage users')->group(function () {
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -206,7 +146,9 @@ Route::middleware('auth')->group(function () {
     });
 
     /*
-    | Superadmin & Admin: Log Audit Sistem
+    |--------------------------------------------------------------------------
+    | Log Audit Aktivitas Sistem
+    |--------------------------------------------------------------------------
     */
     Route::get('/audit-logs', [AuditLogController::class, 'index'])
         ->middleware('permission:view audit logs')
@@ -215,8 +157,7 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Authentication Laravel Breeze
+| 3. Autentikasi (Laravel Breeze)
 |--------------------------------------------------------------------------
 */
-
 require __DIR__ . '/auth.php';
