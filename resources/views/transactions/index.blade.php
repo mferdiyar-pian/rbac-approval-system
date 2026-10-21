@@ -2,11 +2,13 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-xl font-bold text-gray-800">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
                     @if(auth()->user()->hasRole('Inputer') && !auth()->user()->hasAnyRole(['Superadmin', 'Admin', 'Checker', 'Approver']))
-                        Transaksi Saya
+                        <span>Transaksi Saya</span>
+                        <span class="ml-2.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">Mode Inputer</span>
                     @else
-                        Semua Transaksi
+                        <span>Semua Transaksi</span>
+                        <span class="ml-2.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">Mode Pengawas Sistem (Superadmin & Admin)</span>
                     @endif
                 </h2>
                 <p class="text-sm text-gray-500 mt-0.5">
