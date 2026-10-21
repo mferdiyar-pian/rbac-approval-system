@@ -113,6 +113,13 @@ class TransactionController extends Controller
             'Hanya transaksi berstatus pending_check yang dapat diperiksa.'
         );
 
+        // Prinsip Segregation of Duties (SoD): Pembuat transaksi dilarang memeriksa transaksinya sendiri
+        abort_if(
+            $transaction->inputer_id === auth()->id(),
+            403,
+            'Prinsip Segregation of Duties: Inputer tidak dapat memeriksa transaksi yang dibuat sendiri.'
+        );
+
         $transaction->update([
             'status'     => 'pending_approval',
             'checker_id' => auth()->id(),
@@ -137,6 +144,13 @@ class TransactionController extends Controller
             $transaction->status === 'pending_check',
             403,
             'Hanya transaksi berstatus pending_check yang dapat ditolak.'
+        );
+
+        // Prinsip Segregation of Duties (SoD): Pembuat transaksi dilarang memeriksa transaksinya sendiri
+        abort_if(
+            $transaction->inputer_id === auth()->id(),
+            403,
+            'Prinsip Segregation of Duties: Inputer tidak dapat memeriksa transaksi yang dibuat sendiri.'
         );
 
         $transaction->update([
@@ -178,6 +192,19 @@ class TransactionController extends Controller
             'Hanya transaksi yang menunggu persetujuan yang dapat disetujui.'
         );
 
+        // Prinsip Segregation of Duties (SoD): Pembuat transaksi atau Checker dilarang menyetujui transaksi
+        abort_if(
+            $transaction->inputer_id === auth()->id(),
+            403,
+            'Prinsip Segregation of Duties: Inputer tidak dapat menyetujui transaksi yang dibuat sendiri.'
+        );
+
+        abort_if(
+            $transaction->checker_id === auth()->id(),
+            403,
+            'Prinsip Segregation of Duties: Pemeriksa (Checker) tidak dapat memberikan persetujuan akhir pada transaksi yang sama.'
+        );
+
         $transaction->update([
             'status' => 'approved',
             'approver_id' => auth()->id(),
@@ -206,6 +233,13 @@ class TransactionController extends Controller
             $transaction->status === 'pending_approval',
             403,
             'Hanya transaksi yang menunggu persetujuan yang dapat ditolak.'
+        );
+
+        // Prinsip Segregation of Duties (SoD): Pembuat transaksi dilarang bertindak sebagai Approver pada transaksinya sendiri
+        abort_if(
+            $transaction->inputer_id === auth()->id(),
+            403,
+            'Prinsip Segregation of Duties: Inputer tidak dapat memproses persetujuan transaksi yang dibuat sendiri.'
         );
 
         $validated = $request->validate([

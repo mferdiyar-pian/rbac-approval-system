@@ -31,6 +31,15 @@ Hak akses setiap role ditentukan melalui konfigurasi permission pada aplikasi.
 5. Approver menyetujui atau menolak transaksi.
 6. Aktivitas penting dicatat dalam Audit Trail.
 
+## Konsep Segregation of Duties (SoD)
+
+Sistem ini dirancang dengan mematuhi prinsip **Segregation of Duties (SoD)** / Pemisahan Kewenangan dalam arsitektur enterprise:
+- **Dual Control / Four-Eyes Principle:** Pemisahan tegas antara pembuat (Maker/Inputer), pemeriksa (Checker), dan pemutus akhir (Approver).
+- **Pencegahan Konflik Kepentingan:** Pembuat transaksi dilarang mengesahkan transaksinya sendiri (*no self-approval*).
+- **Pemisahan Administratif & Operasional:** Admin/Superadmin mengelola akun dan konfigurasi sistem tanpa merangkap sebagai approver transaksi operasional harian.
+
+Dokumentasi lengkap mengenai matriks peran dan mitigasi risiko dapat dibaca pada [Dokumentasi Segregation of Duties](docs/SEGREGATION_OF_DUTIES.md).
+
 ## Teknologi yang Digunakan
 
 - **Backend:** Laravel, PHP
