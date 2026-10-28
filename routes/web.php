@@ -31,7 +31,7 @@ Route::middleware('auth')->group(function () {
     */
     Route::get('/dashboard', function () {
         return view('dashboard');
-    })->middleware('verified')->name('dashboard');
+    })->name('dashboard');
 
     Route::get('/rbac', [RbacController::class, 'index'])
         ->name('rbac.index');

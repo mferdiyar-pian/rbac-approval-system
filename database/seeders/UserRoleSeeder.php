@@ -50,6 +50,7 @@ class UserRoleSeeder extends Seeder
                 [
                     'name' => $data['name'],
                     'password' => Hash::make('BelajarRBAC123!'),
+                    'email_verified_at' => now(),
                 ]
             );
 
